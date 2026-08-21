@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --color-surface: #faf8ff;
+  --color-surface-dim: #d6d9ef;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f3f2ff;
+  --color-surface-container: #eeeeff;
+  --color-surface-container-high: #e8e7ff;
+  --color-surface-container-highest: #e2e1ff;
+  
+  --color-on-surface: #1a1b21;
+  --color-on-surface-variant: #45464f;
+  
+  --color-primary: #006d77;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #99f0f0;
+  --color-on-primary-container: #002021;
+  
+  --color-secondary: #4d6262;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #cfe7e6;
+  --color-on-secondary-container: #091f1f;
+  
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #410002;
+  
+  --color-background: #f7fafa;
+  --color-on-background: #181c1d;
+  
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "JetBrains Mono", monospace;
+  
+  --radius-sm: 0.25rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-on-background);
+  }
+}
