@@ -250,9 +250,9 @@ export default function Debts() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 relative">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Ledger</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Ledger</h1>
           <p className="text-gray-500">
             Track balances with your friends and family.
           </p>

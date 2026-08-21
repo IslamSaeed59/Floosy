@@ -129,9 +129,9 @@ export default function Transactions() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Transactions</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Transactions</h1>
           <p className="text-gray-500">Track your expenses, income, and transfers.</p>
         </div>
         <button

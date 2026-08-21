@@ -39,7 +39,13 @@ export default function Layout() {
     // Removed orderBy to prevent missing composite index errors, sorted on client side
     const unsubT = onSnapshot(query(collection(db, 'transactions'), where('ownerId', '==', auth.currentUser.uid)), (snap) => {
       const txs = snap.docs.map(d => ({id: d.id, ...d.data()}));
-      txs.sort((a, b) => b.date.localeCompare(a.date));
+      txs.sort((a, b) => {
+        const dateDiff = b.date.localeCompare(a.date);
+        if (dateDiff !== 0) return dateDiff;
+        const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return bTime - aTime;
+      });
       setTransactions(txs);
       tLoaded = true; checkLoad();
     }, (err) => {

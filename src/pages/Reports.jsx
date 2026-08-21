@@ -69,8 +69,8 @@ export default function Reports() {
     <div className="max-w-5xl mx-auto space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
-          <p className="text-gray-500">Analyze your spending habits and income.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Reports</h1>
+          <p className="text-gray-500">Analyze your spending and income.</p>
         </div>
         
         <div className="bg-gray-50 rounded-xl p-1 flex">
@@ -87,13 +87,13 @@ export default function Reports() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
-          <h3 className="text-lg font-bold text-gray-900 mb-2">Total Expenses</h3>
-          <p className="text-3xl font-bold text-error">${totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+        <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] flex flex-col justify-center">
+          <p className="text-sm font-medium text-gray-500 mb-1">Total Expenses</p>
+          <p className="text-2xl md:text-3xl font-bold text-error">${totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
         </div>
-        <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.03)]">
-          <h3 className="text-lg font-bold text-gray-900 mb-2">Total Income</h3>
-          <p className="text-3xl font-bold text-[#2b8a3e]">${totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+        <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] flex flex-col justify-center">
+          <p className="text-sm font-medium text-gray-500 mb-1">Total Income</p>
+          <p className="text-2xl md:text-3xl font-bold text-[#2b8a3e]">${totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
         </div>
       </div>
 
