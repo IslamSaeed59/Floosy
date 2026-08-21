@@ -308,48 +308,64 @@ export default function Transactions() {
         ) : (
           <div className="divide-y divide-gray-100">
             {currentTransactions.map((tx) => (
-              <div key={tx.id} className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between group">
-                <div className="flex items-center gap-4">
+              <div key={tx.id} className="p-4 sm:p-5 hover:bg-gray-50/80 transition-all duration-200 flex items-center justify-between group cursor-pointer relative overflow-hidden">
+                <div className="flex items-center gap-4 sm:gap-5">
                   {(() => {
                     const isExpense = tx.type === 'expense';
                     const cat = isExpense ? getCategoryDetails(tx.categoryId) : null;
                     const IconComp = isExpense ? cat.icon : (tx.type === 'income' ? ArrowUpCircle : ArrowRightLeft);
                     return (
-                      <div className={`p-2 sm:p-3 rounded-full ${
-                        isExpense ? 'bg-orange-50 text-orange-500' :
-                        tx.type === 'income' ? 'bg-[#d3f9d8] text-[#2b8a3e]' : 'bg-gray-100 text-gray-700'
-                      }`} style={isExpense ? { backgroundColor: `${cat.color}20`, color: cat.color } : {}}>
-                        <IconComp className="h-5 w-5 sm:h-6 sm:w-6" />
+                      <div className={`p-3 sm:p-3.5 rounded-2xl flex items-center justify-center shadow-sm border border-black/5 relative overflow-hidden group-hover:scale-105 transition-transform`} style={isExpense ? { backgroundColor: `${cat.color}15`, color: cat.color } : {
+                        backgroundColor: tx.type === 'income' ? '#d3f9d8' : '#f3f4f6',
+                        color: tx.type === 'income' ? '#2b8a3e' : '#4b5563'
+                      }}>
+                        <div className="absolute inset-0 bg-white/40 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <IconComp className="h-5 w-5 sm:h-6 sm:w-6 relative z-10" />
                       </div>
                     );
                   })()}
-                  <div>
-                    <h4 className="font-bold text-sm sm:text-base text-gray-900">
+                  <div className="flex flex-col gap-1">
+                    <h4 className="font-bold text-sm sm:text-base text-gray-900 group-hover:text-primary transition-colors line-clamp-1">
                       {tx.type === 'expense' && getCategoryDetails(tx.categoryId).name}
                       {tx.type === 'income' && tx.source}
                       {tx.type === 'transfer' && `Transfer`}
                     </h4>
-                    <p className="text-xs sm:text-sm text-gray-500">
-                      {tx.date} • {tx.type === 'transfer' ? `${getWalletName(tx.fromWalletId)} ➔ ${getWalletName(tx.toWalletId)}` : getWalletName(tx.walletId)}
-                      {tx.note && ` • ${tx.note}`}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] sm:text-xs font-semibold text-gray-500 bg-gray-100/80 px-2 py-0.5 rounded-md border border-gray-200/50">
+                        {tx.date}
+                      </span>
+                      <span className="text-[10px] sm:text-xs font-medium text-gray-500 flex items-center gap-1">
+                        {tx.type === 'transfer' ? (
+                          <>
+                            <span className="bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{getWalletName(tx.fromWalletId)}</span>
+                            <ArrowRightLeft className="h-3 w-3 text-gray-400" />
+                            <span className="bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{getWalletName(tx.toWalletId)}</span>
+                          </>
+                        ) : (
+                          <span className="bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{getWalletName(tx.walletId)}</span>
+                        )}
+                      </span>
+                    </div>
+                    {tx.note && <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[200px] sm:max-w-md">"{tx.note}"</p>}
                     {tx.type === 'transfer' && (tx.companyFee > 0 || tx.profit > 0) && (
                       <div className="flex gap-2 mt-1">
-                        {tx.companyFee > 0 && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-md font-bold">Fee: {formatCurrency(tx.companyFee)}</span>}
-                        {tx.profit > 0 && <span className="text-xs bg-[#d3f9d8] text-[#2b8a3e] px-2 py-0.5 rounded-md font-bold">Profit: {formatCurrency(tx.profit)}</span>}
+                        {tx.companyFee > 0 && <span className="text-[10px] sm:text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-md font-semibold border border-orange-100 shadow-sm">Fee: {formatCurrency(tx.companyFee)}</span>}
+                        {tx.profit > 0 && <span className="text-[10px] sm:text-xs bg-[#d3f9d8]/50 text-[#2b8a3e] px-2 py-0.5 rounded-md font-semibold border border-[#d3f9d8] shadow-sm">Profit: {formatCurrency(tx.profit)}</span>}
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className={`font-bold text-base sm:text-lg ${
-                    tx.type === 'expense' ? 'text-error' : tx.type === 'income' ? 'text-[#2b8a3e]' : 'text-gray-900'
-                  }`}>
-                    {tx.type === 'expense' ? '-' : tx.type === 'income' ? '+' : ''}
-                    {formatCurrency(tx.amount)}
-                  </span>
-                  <button onClick={() => handleDelete(tx)} className="p-2 text-error opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Trash2 className="h-4 w-4" />
+                <div className="flex items-center gap-3 sm:gap-5">
+                  <div className="text-right">
+                    <span className={`block font-black tracking-tight text-base sm:text-lg ${
+                      tx.type === 'expense' ? 'text-error' : tx.type === 'income' ? 'text-[#2b8a3e]' : 'text-gray-900'
+                    }`}>
+                      {tx.type === 'expense' ? '-' : tx.type === 'income' ? '+' : ''}
+                      {formatCurrency(tx.amount)}
+                    </span>
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(tx); }} className="p-2 sm:p-2.5 bg-red-50 text-error hover:bg-error hover:text-white rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-2 group-hover:translate-x-0 shadow-sm">
+                    <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
                 </div>
               </div>

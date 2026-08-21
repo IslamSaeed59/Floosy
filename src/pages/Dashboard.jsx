@@ -9,7 +9,8 @@ import {
   Plus,
   Target,
   Check,
-  X
+  X,
+  ArrowRightLeft
 } from "lucide-react";
 import { Link, useOutletContext, useNavigate } from "react-router-dom";
 import { formatCurrency } from "../lib/utils";
@@ -287,9 +288,9 @@ export default function Dashboard() {
                 {recentTxs.map((tx) => (
                   <div
                     key={tx.id}
-                    className="p-4 flex items-center justify-between"
+                    className="p-4 sm:p-5 hover:bg-gray-50/80 transition-all duration-200 flex items-center justify-between group cursor-pointer relative overflow-hidden"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 sm:gap-5">
                       {(() => {
                         const isExpense = tx.type === "expense";
                         const cat = isExpense
@@ -299,58 +300,65 @@ export default function Dashboard() {
                           ? cat.icon
                           : tx.type === "income"
                             ? ArrowUpCircle
-                            : ArrowRight;
+                            : ArrowRightLeft;
                         return (
                           <div
-                            className={`p-2 rounded-full ${
-                              isExpense
-                                ? "bg-orange-50 text-orange-500"
-                                : tx.type === "income"
-                                  ? "bg-[#d3f9d8] text-[#2b8a3e]"
-                                  : "bg-gray-100 text-gray-700"
-                            }`}
-                            style={
-                              isExpense
-                                ? {
-                                    backgroundColor: `${cat.color}20`,
-                                    color: cat.color,
-                                  }
-                                : {}
-                            }
+                            className={`p-3 sm:p-3.5 rounded-2xl flex items-center justify-center shadow-sm border border-black/5 relative overflow-hidden group-hover:scale-105 transition-transform`}
+                            style={isExpense ? { backgroundColor: `${cat.color}15`, color: cat.color } : {
+                              backgroundColor: tx.type === 'income' ? '#d3f9d8' : '#f3f4f6',
+                              color: tx.type === 'income' ? '#2b8a3e' : '#4b5563'
+                            }}
                           >
-                            <IconComp className="h-5 w-5" />
+                            <div className="absolute inset-0 bg-white/40 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <IconComp className="h-5 w-5 sm:h-6 sm:w-6 relative z-10" />
                           </div>
                         );
                       })()}
-                      <div>
-                        <h4 className="font-bold text-sm">
+                      <div className="flex flex-col gap-1">
+                        <h4 className="font-bold text-sm sm:text-base text-gray-900 group-hover:text-primary transition-colors line-clamp-1">
                           {tx.type === "expense" &&
                             getCategoryDetails(tx.categoryId).name}
                           {tx.type === "income" && tx.source}
                           {tx.type === "transfer" && `Transfer`}
                         </h4>
-                        <p className="text-xs text-gray-500">
-                          {tx.date} •{" "}
-                          {getWalletName(tx.walletId || tx.fromWalletId)}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[10px] sm:text-xs font-semibold text-gray-500 bg-gray-100/80 px-2 py-0.5 rounded-md border border-gray-200/50">
+                            {tx.date}
+                          </span>
+                          <span className="text-[10px] sm:text-xs font-medium text-gray-500 flex items-center gap-1">
+                            {tx.type === 'transfer' ? (
+                              <>
+                                <span className="bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{getWalletName(tx.fromWalletId)}</span>
+                                <ArrowRightLeft className="h-3 w-3 text-gray-400" />
+                                <span className="bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{getWalletName(tx.toWalletId)}</span>
+                              </>
+                            ) : (
+                              <span className="bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{getWalletName(tx.walletId)}</span>
+                            )}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <span
-                      className={`font-bold text-sm ${
-                        tx.type === "expense"
-                          ? "text-error"
-                          : tx.type === "income"
-                            ? "text-[#2b8a3e]"
-                            : "text-gray-900"
-                      }`}
-                    >
-                      {tx.type === "expense"
-                        ? "-"
-                        : tx.type === "income"
-                          ? "+"
-                          : ""}
-                      {formatCurrency(tx.amount)}
-                    </span>
+                    <div className="flex items-center gap-3 sm:gap-5">
+                      <div className="text-right">
+                        <span
+                          className={`block font-black tracking-tight text-base sm:text-lg ${
+                            tx.type === "expense"
+                              ? "text-error"
+                              : tx.type === "income"
+                                ? "text-[#2b8a3e]"
+                                : "text-gray-900"
+                          }`}
+                        >
+                          {tx.type === "expense"
+                            ? "-"
+                            : tx.type === "income"
+                              ? "+"
+                              : ""}
+                          {formatCurrency(tx.amount)}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
