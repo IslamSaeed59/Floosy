@@ -214,27 +214,27 @@ export default function Debts() {
             onClick={() => setSelectedPerson(p)}
             className="bg-white p-4 rounded-2xl border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] flex justify-between items-center cursor-pointer hover:shadow-md hover:border-primary/20 transition-all group"
           >
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <div
-                className={`p-3 rounded-xl ${p.netBalance > 0 ? "bg-primary/10 text-primary" : p.netBalance < 0 ? "bg-error/10 text-error" : "bg-gray-100 text-gray-500"}`}
+                className={`p-2 sm:p-3 rounded-xl ${p.netBalance > 0 ? "bg-primary/10 text-primary" : p.netBalance < 0 ? "bg-error/10 text-error" : "bg-gray-100 text-gray-500"}`}
               >
-                <User className="h-6 w-6" />
+                <User className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
-                <h3 className="font-bold text-lg text-gray-900 group-hover:text-primary transition-colors">
+                <h3 className="font-bold text-base sm:text-lg text-gray-900 group-hover:text-primary transition-colors">
                   {p.name}
                 </h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-xs sm:text-sm text-gray-500">
                   {p.history.filter((d) => d.status !== "settled").length}{" "}
                   active records
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <div className="text-right">
-                <p className="text-sm text-gray-500">Net Balance</p>
+                <p className="text-xs sm:text-sm text-gray-500">Net Balance</p>
                 <p
-                  className={`font-bold text-xl ${p.netBalance > 0 ? "text-primary" : p.netBalance < 0 ? "text-error" : "text-gray-500"}`}
+                  className={`font-bold text-base sm:text-xl ${p.netBalance > 0 ? "text-primary" : p.netBalance < 0 ? "text-error" : "text-gray-500"}`}
                 >
                   {p.netBalance < 0 ? "-" : ""}
                   {formatCurrency(Math.abs(p.netBalance))}
@@ -370,8 +370,8 @@ export default function Debts() {
                         )}
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-gray-500">Total</p>
-                        <p className="font-bold text-lg text-gray-900">
+                        <p className="text-xs sm:text-sm text-gray-500">Total</p>
+                        <p className="font-bold text-base sm:text-lg text-gray-900">
                           {formatCurrency(debt.totalAmount)}
                         </p>
                       </div>

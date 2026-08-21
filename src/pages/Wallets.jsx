@@ -163,12 +163,12 @@ export default function Wallets() {
             />
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center">
-                <div className="p-3 rounded-full mr-4" style={{ backgroundColor: `${wallet.color}20`, color: wallet.color }}>
-                  <WalletIcon className="h-6 w-6" />
+                <div className="p-2 sm:p-3 rounded-full mr-3 sm:mr-4" style={{ backgroundColor: `${wallet.color}20`, color: wallet.color }}>
+                  <WalletIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-gray-900">{wallet.name}</h3>
-                  <p className="text-2xl font-bold text-primary mt-1">
+                  <h3 className="font-bold text-base sm:text-lg text-gray-900">{wallet.name}</h3>
+                  <p className="text-xl sm:text-2xl font-bold text-primary mt-0.5 sm:mt-1">
                     {formatCurrency(wallet.balance)}
                   </p>
                 </div>

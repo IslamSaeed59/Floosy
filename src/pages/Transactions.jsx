@@ -315,21 +315,21 @@ export default function Transactions() {
                     const cat = isExpense ? getCategoryDetails(tx.categoryId) : null;
                     const IconComp = isExpense ? cat.icon : (tx.type === 'income' ? ArrowUpCircle : ArrowRightLeft);
                     return (
-                      <div className={`p-3 rounded-full ${
+                      <div className={`p-2 sm:p-3 rounded-full ${
                         isExpense ? 'bg-orange-50 text-orange-500' :
                         tx.type === 'income' ? 'bg-[#d3f9d8] text-[#2b8a3e]' : 'bg-gray-100 text-gray-700'
                       }`} style={isExpense ? { backgroundColor: `${cat.color}20`, color: cat.color } : {}}>
-                        <IconComp className="h-6 w-6" />
+                        <IconComp className="h-5 w-5 sm:h-6 sm:w-6" />
                       </div>
                     );
                   })()}
                   <div>
-                    <h4 className="font-bold text-gray-900">
+                    <h4 className="font-bold text-sm sm:text-base text-gray-900">
                       {tx.type === 'expense' && getCategoryDetails(tx.categoryId).name}
                       {tx.type === 'income' && tx.source}
                       {tx.type === 'transfer' && `Transfer`}
                     </h4>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs sm:text-sm text-gray-500">
                       {tx.date} • {tx.type === 'transfer' ? `${getWalletName(tx.fromWalletId)} ➔ ${getWalletName(tx.toWalletId)}` : getWalletName(tx.walletId)}
                       {tx.note && ` • ${tx.note}`}
                     </p>
@@ -342,7 +342,7 @@ export default function Transactions() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className={`font-bold text-lg ${
+                  <span className={`font-bold text-base sm:text-lg ${
                     tx.type === 'expense' ? 'text-error' : tx.type === 'income' ? 'text-[#2b8a3e]' : 'text-gray-900'
                   }`}>
                     {tx.type === 'expense' ? '-' : tx.type === 'income' ? '+' : ''}
