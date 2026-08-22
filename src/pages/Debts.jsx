@@ -343,75 +343,69 @@ export default function Debts() {
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 {currentPersonData.history.map((debt) => (
                   <div
                     key={debt.id}
-                    className={`bg-white p-5 rounded-2xl border ${debt.status === "settled" ? "opacity-60 grayscale" : "shadow-sm"} border-gray-100`}
+                    className={`bg-white p-4 rounded-2xl border ${debt.status === "settled" ? "opacity-60 grayscale bg-gray-50" : "shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-md transition-shadow"} border-gray-100 flex flex-col gap-3 group`}
                   >
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mb-2 ${debt.direction === "lent" ? "bg-primary/10 text-primary" : "bg-error/10 text-error"}`}
-                        >
-                          {debt.direction === "lent"
-                            ? "Lent to them"
-                            : "Borrowed from them"}
-                        </span>
-                        {debt.dueDate && (
-                          <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                            <Calendar className="h-4 w-4" /> Due: {debt.dueDate}
-                          </p>
-                        )}
-                        {debt.note && (
-                          <p className="text-sm text-gray-500 flex items-center gap-1 mt-1 bg-gray-50 px-2 py-1 rounded-md inline-flex">
-                            <FileText className="h-3.5 w-3.5" /> {debt.note}
-                          </p>
-                        )}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        <div className={`p-2.5 sm:p-3 rounded-2xl flex items-center justify-center shrink-0 mt-0.5 ${debt.direction === "lent" ? "bg-primary/10 text-primary" : "bg-error/10 text-error"}`}>
+                          {debt.direction === "lent" ? <ArrowUpRight className="h-5 w-5 sm:h-6 sm:w-6" /> : <ArrowDownRight className="h-5 w-5 sm:h-6 sm:w-6" />}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="font-bold text-sm sm:text-base text-gray-900">
+                              {debt.direction === "lent" ? "Lent to them" : "Borrowed"}
+                            </span>
+                            {debt.status === "settled" && <CheckCircle className="h-4 w-4 text-[#2b8a3e]" />}
+                          </div>
+                          {debt.note && (
+                            <p className="text-xs sm:text-sm text-gray-500 line-clamp-1 mb-1">{debt.note}</p>
+                          )}
+                          {debt.dueDate && (
+                            <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md w-max">
+                              <Calendar className="h-3 w-3" /> Due: {debt.dueDate}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs sm:text-sm text-gray-500">Total</p>
-                        <p className="font-bold text-base sm:text-lg text-gray-900">
+                      
+                      <div className="text-right shrink-0">
+                        <p className={`font-black text-base sm:text-xl tracking-tight ${debt.direction === "lent" ? "text-gray-900" : "text-gray-900"}`}>
                           {formatCurrency(debt.totalAmount)}
                         </p>
+                        {debt.status !== "settled" && (
+                          <p className="text-[10px] sm:text-xs text-gray-400 font-bold mt-1 uppercase tracking-wide">
+                            Rem: <span className="text-gray-900">{formatCurrency(debt.remainingAmount)}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
 
                     {debt.status !== "settled" && (
-                      <>
-                        <div className="flex justify-between text-sm mb-1 mt-4">
-                          <span className="text-gray-500">Remaining</span>
-                          <span className="font-bold text-gray-900">
-                            {formatCurrency(debt.remainingAmount)}
+                      <div className="flex items-center gap-4 mt-2 border-t border-gray-50 pt-3">
+                        <div className="flex-1 flex items-center gap-3">
+                          <div className="w-full bg-gray-100 rounded-full h-1.5 sm:h-2 overflow-hidden flex-1">
+                            <div
+                              className={`h-1.5 sm:h-2 rounded-full transition-all duration-500 ${debt.direction === "lent" ? "bg-primary" : "bg-error"}`}
+                              style={{ width: `${((debt.totalAmount - debt.remainingAmount) / debt.totalAmount) * 100}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-[10px] sm:text-xs font-bold text-gray-400 w-8 text-right">
+                            {Math.round(((debt.totalAmount - debt.remainingAmount) / debt.totalAmount) * 100)}%
                           </span>
                         </div>
-                        <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
-                          <div
-                            className={`h-2 rounded-full ${debt.direction === "lent" ? "bg-primary" : "bg-error"}`}
-                            style={{
-                              width: `${((debt.totalAmount - debt.remainingAmount) / debt.totalAmount) * 100}%`,
-                            }}
-                          ></div>
-                        </div>
-                        <div className="flex justify-end border-t border-gray-50 pt-3">
-                          <button
-                            onClick={() => {
-                              setRepayingDebt(debt);
-                              setRepayAmount(debt.remainingAmount);
-                            }}
-                            className={`px-4 py-2 text-sm font-bold rounded-xl flex items-center gap-2 ${debt.direction === "lent" ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-error/10 text-error hover:bg-error/20"} transition-colors`}
-                          >
-                            <ArrowRightLeft className="h-4 w-4" />{" "}
-                            {debt.direction === "lent"
-                              ? "Record Repayment"
-                              : "Pay Them Back"}
-                          </button>
-                        </div>
-                      </>
-                    )}
-                    {debt.status === "settled" && (
-                      <div className="mt-3 pt-3 border-t border-gray-50 flex items-center gap-2 text-sm font-bold text-gray-400">
-                        <CheckCircle className="h-4 w-4" /> Settled
+                        <button
+                          onClick={() => {
+                            setRepayingDebt(debt);
+                            setRepayAmount(debt.remainingAmount);
+                          }}
+                          className={`px-4 sm:px-6 py-2 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-1.5 ${debt.direction === "lent" ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-error/10 text-error hover:bg-error/20"} transition-colors shrink-0`}
+                        >
+                          <ArrowRightLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Repay
+                        </button>
                       </div>
                     )}
                   </div>

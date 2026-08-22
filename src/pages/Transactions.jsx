@@ -144,56 +144,52 @@ export default function Transactions() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleAddTransaction} className="bg-white p-6 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-gray-100 space-y-6">
-          <div className="flex gap-4 border-b border-gray-100 pb-4">
+        <form onSubmit={handleAddTransaction} className="bg-white p-5 sm:p-8 rounded-[2rem] shadow-2xl border border-gray-100 animate-in slide-in-from-top-4 duration-300">
+          <div className="flex p-1.5 bg-gray-100 rounded-2xl w-full mb-8 shadow-inner">
             {['expense', 'income', 'transfer'].map(t => (
-              <label key={t} className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="type"
-                  checked={type === t}
-                  onChange={() => setType(t)}
-                  className="text-primary focus:ring-primary h-4 w-4"
-                />
-                <span className="capitalize text-gray-900 font-medium">{t}</span>
-              </label>
+              <button
+                key={t}
+                type="button"
+                onClick={() => setType(t)}
+                className={`flex-1 py-3 text-center text-sm font-bold rounded-xl transition-all duration-300 capitalize ${
+                  type === t 
+                    ? `bg-white shadow-[0_2px_10px_rgba(0,0,0,0.1)] scale-[1.02] ${t === 'expense' ? 'text-error' : t === 'income' ? 'text-[#2b8a3e]' : 'text-primary'}` 
+                    : 'text-gray-500 hover:text-gray-900'
+                }`}
+              >
+                {t}
+              </button>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Amount</label>
+          <div className="mb-8">
+            <label className="block text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wider">Amount</label>
+            <div className="relative">
+              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-black text-xl">EGP</span>
               <input
                 type="number"
                 required
                 step="0.01"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary bg-gray-50 text-gray-900"
+                placeholder="0.00"
+                className="w-full pl-16 pr-5 py-4 text-3xl font-black border border-gray-200 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary bg-white text-gray-900 transition-all outline-none shadow-sm"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Date</label>
-              <input
-                type="date"
-                required
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary bg-gray-50 text-gray-900"
-              />
-            </div>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {type !== 'transfer' && (
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Wallet</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Wallet</label>
                 <select
                   required
                   value={walletId}
                   onChange={(e) => setWalletId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary bg-gray-50 text-gray-900"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary bg-gray-50 text-gray-900 transition-all outline-none"
                 >
                   <option value="">Select Wallet</option>
-                  {wallets.map(w => <option key={w.id} value={w.id}>{w.name} ({w.balance})</option>)}
+                  {wallets.map(w => <option key={w.id} value={w.id}>{w.name} ({formatCurrency(w.balance)})</option>)}
                 </select>
               </div>
             )}
@@ -201,51 +197,51 @@ export default function Transactions() {
             {type === 'transfer' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">From Wallet</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">From Wallet</label>
                   <select
                     required
                     value={walletId}
                     onChange={(e) => setWalletId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary bg-gray-50 text-gray-900"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary bg-gray-50 text-gray-900 transition-all outline-none"
                   >
                     <option value="">Select Wallet</option>
-                    {wallets.map(w => <option key={w.id} value={w.id}>{w.name} ({w.balance})</option>)}
+                    {wallets.map(w => <option key={w.id} value={w.id}>{w.name} ({formatCurrency(w.balance)})</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">To Wallet (الكاش المستلم)</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">To Wallet (الكاش المستلم)</label>
                   <select
                     required
                     value={toWalletId}
                     onChange={(e) => setToWalletId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary bg-gray-50 text-gray-900"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary bg-gray-50 text-gray-900 transition-all outline-none"
                   >
                     <option value="">Select Wallet</option>
-                    {wallets.filter(w => w.id !== walletId).map(w => <option key={w.id} value={w.id}>{w.name} ({w.balance})</option>)}
+                    {wallets.filter(w => w.id !== walletId).map(w => <option key={w.id} value={w.id}>{w.name} ({formatCurrency(w.balance)})</option>)}
                   </select>
                 </div>
                 {isVodafoneCash && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">Company Fee (خصم الشركة)</label>
+                      <label className="block text-sm font-semibold text-orange-700 mb-2">Company Fee (خصم الشركة)</label>
                       <input
                         type="number"
                         step="0.01"
                         value={companyFee}
                         onChange={(e) => setCompanyFee(e.target.value)}
                         placeholder="e.g. 1"
-                        className="w-full px-3 py-2 border border-orange-200 rounded-xl focus:ring-2 focus:ring-orange-500 bg-orange-50/50 text-gray-900"
+                        className="w-full px-4 py-3 border border-orange-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-orange-50/50 text-gray-900 transition-all outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">My Profit (مكسبي/العمولة)</label>
+                      <label className="block text-sm font-semibold text-green-700 mb-2">My Profit (مكسبي/العمولة)</label>
                       <input
                         type="number"
                         step="0.01"
                         value={profit}
                         onChange={(e) => setProfit(e.target.value)}
                         placeholder="e.g. 10"
-                        className="w-full px-3 py-2 border border-green-200 rounded-xl focus:ring-2 focus:ring-green-500 bg-green-50/50 text-gray-900"
+                        className="w-full px-4 py-3 border border-green-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-green-50/50 text-gray-900 transition-all outline-none"
                       />
                     </div>
                   </>
@@ -255,12 +251,12 @@ export default function Transactions() {
 
             {type === 'expense' && (
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Category</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
                 <select
                   required
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary bg-gray-50 text-gray-900"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary bg-gray-50 text-gray-900 transition-all outline-none"
                 >
                   <option value="">Select Category</option>
                   {DEFAULT_CATEGORIES.filter(c => c.type === 'expense').map(c => (
@@ -272,32 +268,48 @@ export default function Transactions() {
 
             {type === 'income' && (
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">Source</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Source</label>
                 <input
                   type="text"
                   required
                   value={source}
                   onChange={(e) => setSource(e.target.value)}
                   placeholder="e.g. Salary, Freelance"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary bg-gray-50 text-gray-900"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary bg-gray-50 text-gray-900 transition-all outline-none"
                 />
               </div>
             )}
             
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+              <input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary bg-gray-50 text-gray-900 transition-all outline-none"
+              />
+            </div>
+
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-900 mb-2">Note (Optional)</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Note (Optional)</label>
               <input
                 type="text"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary bg-gray-50 text-gray-900"
+                placeholder="What was this for?"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary bg-gray-50 text-gray-900 transition-all outline-none"
               />
             </div>
           </div>
           
-          <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-gray-500 hover:text-gray-900">Cancel</button>
-            <button type="submit" className="px-4 py-2 bg-primary text-white rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:bg-gray-50-tint">Save Transaction</button>
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-8">
+            <button type="button" onClick={() => setShowForm(false)} className="px-5 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl font-semibold transition-colors">Cancel</button>
+            <button type="submit" className={`px-6 py-2.5 text-white rounded-xl font-bold shadow-[0_2px_10px_rgba(0,0,0,0.05)] hover:opacity-90 hover:-translate-y-0.5 transition-all capitalize ${
+              type === 'expense' ? 'bg-error' : type === 'income' ? 'bg-[#2b8a3e]' : 'bg-primary'
+            }`}>
+              Save {type}
+            </button>
           </div>
         </form>
       )}

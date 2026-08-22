@@ -10,12 +10,14 @@ import {
   Target,
   Check,
   X,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Edit2,
+  Trash2
 } from "lucide-react";
 import { Link, useOutletContext, useNavigate } from "react-router-dom";
 import { formatCurrency } from "../lib/utils";
 import { DEFAULT_CATEGORIES } from "../lib/constants";
-import { collection, doc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, serverTimestamp, updateDoc, deleteDoc } from 'firebase/firestore';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -24,9 +26,35 @@ export default function Dashboard() {
 
   // Goal Form State
   const [showGoalForm, setShowGoalForm] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState(null);
   const [goalName, setGoalName] = useState("");
   const [goalTarget, setGoalTarget] = useState("");
   const [goalWallets, setGoalWallets] = useState([]);
+
+  const resetGoalForm = () => {
+    setShowGoalForm(false);
+    setEditingGoalId(null);
+    setGoalName("");
+    setGoalTarget("");
+    setGoalWallets([]);
+  };
+
+  const handleEditGoal = (goal) => {
+    setEditingGoalId(goal.id);
+    setGoalName(goal.name);
+    setGoalTarget(goal.targetAmount);
+    setGoalWallets(goal.linkedWallets || []);
+    setShowGoalForm(true);
+  };
+
+  const handleDeleteGoal = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this goal?")) return;
+    try {
+      await deleteDoc(doc(db, 'goals', id));
+    } catch(err) {
+      console.error(err);
+    }
+  };
 
   const toggleWallet = (id) => {
     const newSet = new Set(selectedWallets);
@@ -71,27 +99,32 @@ export default function Dashboard() {
     }
   };
 
-  const handleAddGoal = async (e) => {
+  const handleSaveGoal = async (e) => {
     e.preventDefault();
     if (!goalName || !goalTarget || goalWallets.length === 0) return alert("Please fill all fields and select at least one wallet.");
     
     try {
-      const newGoalRef = doc(collection(db, 'goals'));
-      await setDoc(newGoalRef, {
-        ownerId: auth.currentUser.uid,
-        name: goalName,
-        targetAmount: parseFloat(goalTarget),
-        linkedWallets: goalWallets,
-        status: 'active',
-        createdAt: serverTimestamp()
-      });
-      setShowGoalForm(false);
-      setGoalName("");
-      setGoalTarget("");
-      setGoalWallets([]);
+      if (editingGoalId) {
+        await updateDoc(doc(db, 'goals', editingGoalId), {
+          name: goalName,
+          targetAmount: parseFloat(goalTarget),
+          linkedWallets: goalWallets,
+        });
+      } else {
+        const newGoalRef = doc(collection(db, 'goals'));
+        await setDoc(newGoalRef, {
+          ownerId: auth.currentUser.uid,
+          name: goalName,
+          targetAmount: parseFloat(goalTarget),
+          linkedWallets: goalWallets,
+          status: 'active',
+          createdAt: serverTimestamp()
+        });
+      }
+      resetGoalForm();
     } catch(err) {
       console.error(err);
-      alert("Error adding goal.");
+      alert("Error saving goal.");
     }
   };
 
@@ -204,7 +237,7 @@ export default function Dashboard() {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg md:text-xl font-bold text-gray-900">Savings Goals</h3>
-          <button onClick={() => setShowGoalForm(true)} className="text-sm font-medium text-primary flex items-center hover:underline">
+          <button onClick={() => { resetGoalForm(); setShowGoalForm(true); }} className="text-sm font-medium text-primary flex items-center hover:underline">
             <Plus className="h-4 w-4 mr-1" /> New Goal
           </button>
         </div>
@@ -231,11 +264,19 @@ export default function Dashboard() {
                         </div>
                         <h4 className="font-bold text-gray-900 text-sm sm:text-base leading-tight line-clamp-2">{goal.name}</h4>
                       </div>
-                      {isAchieved && (
-                        <button onClick={() => handleCompleteGoal(goal.id)} className="p-1 sm:p-1.5 bg-[#d3f9d8] text-[#2b8a3e] rounded-md hover:scale-110 transition-transform shrink-0 ml-1" title="Mark as Completed">
-                          <Check className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => handleEditGoal(goal)} className="p-1 sm:p-1.5 text-gray-400 hover:text-primary transition-colors" title="Edit Goal">
+                          <Edit2 className="h-3 w-3 sm:h-4 sm:w-4" />
                         </button>
-                      )}
+                        <button onClick={() => handleDeleteGoal(goal.id)} className="p-1 sm:p-1.5 text-gray-400 hover:text-error transition-colors" title="Delete Goal">
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </button>
+                        {isAchieved && (
+                          <button onClick={() => handleCompleteGoal(goal.id)} className="p-1 sm:p-1.5 bg-[#d3f9d8] text-[#2b8a3e] rounded-md hover:scale-110 transition-transform shrink-0" title="Mark as Completed">
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end mb-2">
@@ -429,13 +470,13 @@ export default function Dashboard() {
       {/* Add Goal Modal */}
       {showGoalForm && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <form onSubmit={handleAddGoal} className="bg-white p-7 rounded-2xl max-w-md w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
+          <form onSubmit={handleSaveGoal} className="bg-white p-7 rounded-2xl max-w-md w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
                 <Target className="h-6 w-6 text-primary" />
-                New Goal
+                {editingGoalId ? "Edit Goal" : "New Goal"}
               </h2>
-              <button type="button" onClick={() => setShowGoalForm(false)} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors">
+              <button type="button" onClick={resetGoalForm} className="p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -477,8 +518,10 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
-              <button type="button" onClick={() => setShowGoalForm(false)} className="px-5 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl font-semibold transition-colors">Cancel</button>
-              <button type="submit" className="px-5 py-2.5 bg-primary text-white rounded-xl font-semibold shadow-[0_2px_10px_rgba(0,0,0,0.05)] hover:opacity-90 transition-all">Create Goal</button>
+              <button type="button" onClick={resetGoalForm} className="px-5 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl font-semibold transition-colors">Cancel</button>
+              <button type="submit" className="px-5 py-2.5 bg-primary text-white rounded-xl font-semibold shadow-[0_2px_10px_rgba(0,0,0,0.05)] hover:opacity-90 transition-all">
+                {editingGoalId ? "Save Changes" : "Create Goal"}
+              </button>
             </div>
           </form>
         </div>
