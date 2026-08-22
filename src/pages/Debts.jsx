@@ -431,7 +431,7 @@ export default function Debts() {
                             </p>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button onClick={(e) => { e.stopPropagation(); startEditing(debt); }} className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Edit">
                             <Pencil className="h-4 w-4" />
                           </button>
