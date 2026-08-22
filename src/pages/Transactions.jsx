@@ -30,7 +30,10 @@ export default function Transactions() {
   const [profit, setProfit] = useState('');
 
   const selectedFromWallet = wallets.find(w => w.id === walletId);
-  const isVodafoneCash = type === 'transfer' && selectedFromWallet?.name.toLowerCase().includes('vodafone-cash');
+  const selectedToWallet = wallets.find(w => w.id === toWalletId);
+  const isVodafoneFrom = type === 'transfer' && selectedFromWallet?.name.toLowerCase().includes('vodafone-cash');
+  const isVodafoneTo = type === 'transfer' && selectedToWallet?.name.toLowerCase().includes('vodafone-cash');
+  const isVodafoneCash = isVodafoneFrom || isVodafoneTo;
 
   const handleAddTransaction = async (e) => {
     e.preventDefault();
@@ -70,16 +73,32 @@ export default function Transactions() {
         let feeAmount = 0;
         let profitAmount = 0;
 
+        let fromDelta = -parsedAmount;
+        let toDelta = parsedAmount;
+        let transferSubType = 'standard';
+
         if (isVodafoneCash) {
           feeAmount = parseFloat(companyFee) || 0;
           profitAmount = parseFloat(profit) || 0;
           
           if (feeAmount > 0) txData.companyFee = feeAmount;
           if (profitAmount > 0) txData.profit = profitAmount;
+
+          if (isVodafoneFrom) {
+            fromDelta = -(parsedAmount + feeAmount);
+            toDelta = parsedAmount + profitAmount;
+            transferSubType = 'cash_in';
+          } else if (isVodafoneTo) {
+            fromDelta = -(parsedAmount - profitAmount + feeAmount);
+            toDelta = parsedAmount;
+            transferSubType = 'cash_out';
+          }
         }
 
-        batch.update(doc(db, 'wallets', walletId), { balance: increment(-(parsedAmount + feeAmount)) });
-        batch.update(doc(db, 'wallets', toWalletId), { balance: increment(parsedAmount + profitAmount) });
+        txData.transferSubType = transferSubType;
+
+        batch.update(doc(db, 'wallets', walletId), { balance: increment(fromDelta) });
+        batch.update(doc(db, 'wallets', toWalletId), { balance: increment(toDelta) });
       }
 
       batch.set(newTxRef, txData);
@@ -109,8 +128,17 @@ export default function Transactions() {
       } else if (tx.type === 'income') {
         batch.update(doc(db, 'wallets', tx.walletId), { balance: increment(-tx.amount) });
       } else if (tx.type === 'transfer') {
-        const reverseFromAmount = tx.amount + (tx.companyFee || 0);
-        const reverseToAmount = tx.amount + (tx.profit || 0);
+        let reverseFromAmount = tx.amount;
+        let reverseToAmount = tx.amount;
+
+        if (tx.transferSubType === 'cash_out') {
+          reverseFromAmount = tx.amount - (tx.profit || 0) + (tx.companyFee || 0);
+          reverseToAmount = tx.amount;
+        } else {
+          reverseFromAmount = tx.amount + (tx.companyFee || 0);
+          reverseToAmount = tx.amount + (tx.profit || 0);
+        }
+
         batch.update(doc(db, 'wallets', tx.fromWalletId), { balance: increment(reverseFromAmount) });
         batch.update(doc(db, 'wallets', tx.toWalletId), { balance: increment(-reverseToAmount) });
       }
@@ -221,30 +249,35 @@ export default function Transactions() {
                   </select>
                 </div>
                 {isVodafoneCash && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-semibold text-orange-700 mb-2">Company Fee (خصم الشركة)</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={companyFee}
-                        onChange={(e) => setCompanyFee(e.target.value)}
-                        placeholder="e.g. 1"
-                        className="w-full px-4 py-3 border border-orange-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 bg-orange-50/50 text-gray-900 transition-all outline-none"
-                      />
+                  <div className="md:col-span-2 p-5 bg-primary/5 rounded-2xl border border-primary/10 mt-2">
+                    <h4 className="text-sm font-black text-primary flex items-center gap-2 mb-4">
+                      {isVodafoneFrom ? 'Vodafone Cash In (إيداع للعميل)' : 'Vodafone Cash Out (سحب من العميل)'}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-orange-700 mb-1.5 uppercase tracking-wider">Company Fee (خصم الشركة)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={companyFee}
+                          onChange={(e) => setCompanyFee(e.target.value)}
+                          placeholder="e.g. 1"
+                          className="w-full px-4 py-3 border border-orange-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 bg-white text-gray-900 shadow-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-green-700 mb-1.5 uppercase tracking-wider">My Profit (مكسبي/العمولة)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={profit}
+                          onChange={(e) => setProfit(e.target.value)}
+                          placeholder="e.g. 10"
+                          className="w-full px-4 py-3 border border-green-200 rounded-xl focus:ring-2 focus:ring-green-500/20 bg-white text-gray-900 shadow-sm"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-green-700 mb-2">My Profit (مكسبي/العمولة)</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={profit}
-                        onChange={(e) => setProfit(e.target.value)}
-                        placeholder="e.g. 10"
-                        className="w-full px-4 py-3 border border-green-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-green-50/50 text-gray-900 transition-all outline-none"
-                      />
-                    </div>
-                  </>
+                  </div>
                 )}
               </>
             )}
@@ -340,7 +373,7 @@ export default function Transactions() {
                     <h4 className="font-bold text-sm sm:text-base text-gray-900 group-hover:text-primary transition-colors line-clamp-1">
                       {tx.type === 'expense' && getCategoryDetails(tx.categoryId).name}
                       {tx.type === 'income' && tx.source}
-                      {tx.type === 'transfer' && `Transfer`}
+                      {tx.type === 'transfer' && (!tx.transferSubType || tx.transferSubType === 'standard' ? 'Transfer' : tx.transferSubType === 'cash_in' ? 'Vodafone Cash In (إيداع)' : 'Vodafone Cash Out (سحب)')}
                     </h4>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-[10px] sm:text-xs font-semibold text-gray-500 bg-gray-100/80 px-2 py-0.5 rounded-md border border-gray-200/50">

@@ -8,6 +8,8 @@ import {
   doc,
   writeBatch,
   increment,
+  updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import {
   Plus,
@@ -20,6 +22,8 @@ import {
   X,
   ArrowUpRight,
   ArrowDownRight,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 
 export default function Debts() {
@@ -38,6 +42,7 @@ export default function Debts() {
   const [note, setNote] = useState("");
   const [walletId, setWalletId] = useState("");
   const [newDebtDirection, setNewDebtDirection] = useState("lent");
+  const [editingDebt, setEditingDebt] = useState(null);
 
   // Repayment Modal State
   const [repayingDebt, setRepayingDebt] = useState(null);
@@ -191,6 +196,49 @@ export default function Debts() {
     } catch (error) {
       console.error("Error processing repayment: ", error);
     }
+  };
+
+  const handleEditDebt = async (e) => {
+    e.preventDefault();
+    if (!editingDebt) return;
+    const amount = parseFloat(totalAmount);
+    if (!amount || amount <= 0) return alert("Invalid amount");
+
+    try {
+      const amountDiff = amount - editingDebt.totalAmount;
+      const newRemaining = editingDebt.remainingAmount + amountDiff;
+
+      await updateDoc(doc(db, "debts", editingDebt.id), {
+        totalAmount: amount,
+        remainingAmount: newRemaining,
+        dueDate: dueDate || null,
+        note: note
+      });
+
+      setEditingDebt(null);
+      setTotalAmount("");
+      setDueDate("");
+      setNote("");
+    } catch (error) {
+      console.error("Error updating debt: ", error);
+    }
+  };
+
+  const handleDeleteDebt = async (debt) => {
+    if (!window.confirm("Are you sure you want to delete this record? Note: This will not automatically adjust any wallet balances or transactions.")) return;
+    
+    try {
+      await deleteDoc(doc(db, "debts", debt.id));
+    } catch (error) {
+      console.error("Error deleting debt: ", error);
+    }
+  };
+
+  const startEditing = (debt) => {
+    setEditingDebt(debt);
+    setTotalAmount(debt.totalAmount.toString());
+    setDueDate(debt.dueDate || "");
+    setNote(debt.note || "");
   };
 
   const openNewDebtForm = (name = "", direction = "lent") => {
@@ -372,15 +420,25 @@ export default function Debts() {
                         </div>
                       </div>
                       
-                      <div className="text-right shrink-0">
-                        <p className={`font-black text-base sm:text-xl tracking-tight ${debt.direction === "lent" ? "text-gray-900" : "text-gray-900"}`}>
-                          {formatCurrency(debt.totalAmount)}
-                        </p>
-                        {debt.status !== "settled" && (
-                          <p className="text-[10px] sm:text-xs text-gray-400 font-bold mt-1 uppercase tracking-wide">
-                            Rem: <span className="text-gray-900">{formatCurrency(debt.remainingAmount)}</span>
+                      <div className="flex flex-col items-end shrink-0 gap-2">
+                        <div className="text-right">
+                          <p className={`font-black text-base sm:text-xl tracking-tight text-gray-900`}>
+                            {formatCurrency(debt.totalAmount)}
                           </p>
-                        )}
+                          {debt.status !== "settled" && (
+                            <p className="text-[10px] sm:text-xs text-gray-400 font-bold mt-1 uppercase tracking-wide">
+                              Rem: <span className="text-gray-900">{formatCurrency(debt.remainingAmount)}</span>
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={(e) => { e.stopPropagation(); startEditing(debt); }} className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors" title="Edit">
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); handleDeleteDebt(debt); }} className="p-1.5 text-gray-400 hover:text-error hover:bg-error/10 rounded-lg transition-colors" title="Delete">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -509,6 +567,67 @@ export default function Debts() {
                 className="px-5 py-2.5 bg-primary text-white rounded-xl font-semibold shadow-[0_2px_10px_rgba(0,0,0,0.05)] hover:opacity-90 transition-all"
               >
                 Save Record
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Edit Debt Modal */}
+      {editingDebt && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <form
+            onSubmit={handleEditDebt}
+            className="bg-white p-7 rounded-2xl max-w-md w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200"
+          >
+            <h2 className="text-2xl font-black text-gray-900 mb-6 tracking-tight">Edit Record</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Total Amount</label>
+                <input
+                  type="number"
+                  required
+                  step="0.01"
+                  value={totalAmount}
+                  onChange={(e) => setTotalAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary outline-none transition-all"
+                />
+                <p className="text-xs text-gray-500 mt-1">Remaining amount will be adjusted automatically.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Due Date (Optional)</label>
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Note (Reason)</label>
+                <input
+                  type="text"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="e.g. Dinner split"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-900 focus:bg-white focus:ring-2 focus:ring-primary outline-none transition-all"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
+              <button
+                type="button"
+                onClick={() => setEditingDebt(null)}
+                className="px-5 py-2.5 text-gray-500 hover:bg-gray-100 rounded-xl font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2.5 bg-primary text-white rounded-xl font-semibold shadow-[0_2px_10px_rgba(0,0,0,0.05)] hover:opacity-90 transition-all"
+              >
+                Save Changes
               </button>
             </div>
           </form>
